@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OtamaRun</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div id="menuOverlay" class="overlay">
+      <div class="panel menu-panel">
+        <div class="menu-glow menu-glow-one"></div>
+        <div class="menu-glow menu-glow-two"></div>
+
+        <div id="menuMainView" class="menu-view">
+          <div class="menu-art menu-art-main" aria-hidden="true">
+            <div class="hero-otama">
+              <span class="hero-ring ring-one"></span>
+              <span class="hero-ring ring-two"></span>
+              <span class="hero-ring ring-three"></span>
+              <span class="hero-face">
+                <span class="hero-eye left"></span>
+                <span class="hero-eye right"></span>
+                <span class="hero-mouth"></span>
+              </span>
+            </div>
+          </div>
+
+          <div class="menu-copy">
+            <div class="brand" aria-label="OtamaRun logo">
+              <div class="logo-mark">
+                <span class="logo-eye left"></span>
+                <span class="logo-eye right"></span>
+                <span class="logo-mouth"></span>
+                <span class="logo-stem"></span>
+              </div>
+              <h1 class="brand-title">tamaRun</h1>
+            </div>
+
+            <div class="menu-actions">
+              <button id="startButton" class="primary-button" type="button">Start</button>
+              <button id="howToPlayButton" class="secondary-button" type="button">How to Play</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="howToPlayPanel" class="menu-view how-view hidden">
+          <div class="how-header">
+            <h2>How to Play</h2>
+          </div>
+          <div class="how-panel">
+            <div class="how-chip">Move: W A S D / Arrows</div>
+            <div class="how-chip">Dash: Space</div>
+            <div class="how-chip">Charge Shout: Hold Left Click</div>
+            <div class="how-chip">Release Shout: Let Go</div>
+          </div>
+          <button id="backToMenuButton" class="secondary-button" type="button">Back</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud hud-top">
+      <div class="hud-item">
+        <span class="hud-label">&nbsp;</span>
+        <span class="hud-value">&nbsp;</span>
+      </div>
+      <div class="hud-item score-item">
+        <span class="hud-label">Score</span>
+        <span id="scoreDisplay" class="hud-value">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Shout</span>
+        <span id="chargeDisplay" class="hud-value">Ready</span>
+      </div>
+    </div>
+
+    <div id="dashCorner" class="dash-corner ready">
+      <div class="dash-ring">
+        <div class="dash-icon-wrap">
+          <div class="dash-flare"></div>
+          <div class="dash-icon" aria-hidden="true">
+            <span class="dash-streak streak-one"></span>
+            <span class="dash-streak streak-two"></span>
+            <span class="dash-arrow"></span>
+          </div>
+        </div>
+      </div>
+      <span class="hud-label">Dash</span>
+      <span id="dashDisplayCorner" class="hud-value">Ready</span>
+      <div id="megaDisplay" class="mega-display hidden" aria-label="Mega Shout Ready">
+        <div class="mega-icon">
+          <span class="mega-core"></span>
+          <span class="mega-wave wave-one"></span>
+          <span class="mega-wave wave-two"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud hud-bottom">
+      <div class="hud-item">
+        <span class="hud-label">HP</span>
+        <span id="hpDisplay" class="hud-value">&#10084; &#10084; &#10084;</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Stamina</span>
+        <span id="staminaDisplay" class="hud-value">100 / 100</span>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas" aria-label="Dodge game canvas"></canvas>
+
+    <div id="mobileControls" class="mobile-controls hidden" aria-hidden="true">
+      <div id="joystickBase" class="joystick-base">
+        <div id="joystickKnob" class="joystick-knob"></div>
+      </div>
+      <button id="dashButtonMobile" class="dash-button-mobile" type="button" aria-label="Dash">Dash</button>
+    </div>
+
+    <div id="gameOverOverlay" class="overlay hidden">
+      <div class="panel">
+        <h2>Game Over</h2>
+        <p class="subtitle">Your Otamatone got bonked, but the beat can start again.</p>
+        <p id="finalScore" class="final-score">Final Score: 0</p>
+        <div class="button-row">
+          <button id="restartButton" class="primary-button" type="button">Restart Run</button>
+          <button id="menuButton" class="secondary-button" type="button">Back to Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
