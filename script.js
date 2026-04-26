@@ -22,6 +22,61 @@ const dashDisplayCorner = document.getElementById("dashDisplayCorner");
 const staminaDisplay = document.getElementById("staminaDisplay");
 const chargeDisplay = document.getElementById("chargeDisplay");
 const finalScore = document.getElementById("finalScore");
+
+// BGM State
+const bgmState = {
+  isPlaying: false,
+  nextNoteTime: 0,
+  currentBeat: 0,
+  tempo: 125,
+};
+
+const bgmMelody = [392, 0, 392, 0, 466, 0, 392, 0, 523, 466, 392, 0, 349, 392, 0, 0];
+const bgmBass = [196, 0, 196, 0, 233, 0, 196, 0, 261, 233, 196, 0, 174, 196, 0, 0];
+
+function scheduleBGM() {
+  if (!bgmState.isPlaying || !audioState.context) return;
+  const now = audioState.context.currentTime;
+  const secondsPerBeat = 60.0 / bgmState.tempo;
+  
+  while (bgmState.nextNoteTime < now + 0.1) {
+    playBGMNote(bgmState.currentBeat, bgmState.nextNoteTime);
+    bgmState.nextNoteTime += secondsPerBeat / 4;
+    bgmState.currentBeat = (bgmState.currentBeat + 1) % 16;
+  }
+}
+
+function playBGMNote(beat, time) {
+  const context = audioState.context;
+  const melodyFreq = bgmMelody[beat];
+  const bassFreq = bgmBass[beat];
+  const delay = time - context.currentTime;
+
+  if (melodyFreq) {
+    playTone({ type: "square", startFreq: melodyFreq, endFreq: melodyFreq, duration: 0.1, gain: 0.045, delay }); // Tripled melody volume
+  }
+  if (bassFreq) {
+    playTone({ type: "triangle", startFreq: bassFreq, endFreq: bassFreq, duration: 0.15, gain: 0.05, delay }); // Doubled bass volume
+  }
+  if (beat % 4 === 0) {
+    playNoiseBurst({ duration: 0.06, gain: 0.045, filterType: "lowpass", filterStart: 250, filterEnd: 60, delay }); // Louder kick
+  } else if (beat % 2 === 0) {
+    playNoiseBurst({ duration: 0.03, gain: 0.025, filterType: "highpass", filterStart: 6000, filterEnd: 8000, delay }); // Louder hi-hat
+  }
+}
+
+function startBGM() {
+  const context = getAudioContext();
+  if (!context) return;
+  bgmState.isPlaying = true;
+  bgmState.nextNoteTime = context.currentTime + 0.1;
+  bgmState.currentBeat = 0;
+}
+
+function stopBGM() {
+  bgmState.isPlaying = false;
+}
+
 const keys = {
   w: false,
   a: false,
@@ -80,14 +135,14 @@ function getAudioContext() {
   if (!audioState.context) {
     const context = new AudioContextClass();
     const compressor = context.createDynamicsCompressor();
-    compressor.threshold.value = -12; // Raised from -18 to allow more volume before squashing
+    compressor.threshold.value = -6; // Raised further to allow even more volume without distortion
     compressor.knee.value = 24;
     compressor.ratio.value = 12;
     compressor.attack.value = 0.003;
     compressor.release.value = 0.24;
 
     const masterGain = context.createGain();
-    masterGain.gain.value = 0.45; // Increased from 0.22
+    masterGain.gain.value = 0.85; // Increased from 0.45 to make everything globally louder
     masterGain.connect(compressor);
     compressor.connect(context.destination);
 
@@ -681,6 +736,7 @@ function resetGame() {
 
 function startGame() {
   getAudioContext();
+  startBGM();
   playStartSound();
   resetGame();
   game.running = true;
@@ -690,6 +746,7 @@ function startGame() {
 }
 
 function endGame() {
+  stopBGM();
   stopChargeHum();
   playGameOverSound();
   game.running = false;
@@ -698,6 +755,7 @@ function endGame() {
 }
 
 function showMenu() {
+  stopBGM();
   playMenuClickSound();
   stopChargeHum();
   game.running = false;
@@ -1645,6 +1703,7 @@ function gameLoop(timestamp) {
   handleCollisions();
   updateParticles(deltaTime);
   updateShoutWaves(deltaTime);
+  scheduleBGM();
 
   while (game.spawnTimer >= game.spawnInterval) {
     spawnObstacle();
