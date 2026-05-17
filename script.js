@@ -80,8 +80,10 @@ const dashDisplayCorner = document.getElementById("dashDisplayCorner");
 const staminaDisplay = document.getElementById("staminaDisplay");
 const chargeDisplay = document.getElementById("chargeDisplay");
 const finalScore = document.getElementById("finalScore");
+const bestScore = document.getElementById("bestScore");
 
 const TOUCH_LAYOUT_STORAGE_KEY = "otamarun-touch-layout";
+const BEST_SCORE_STORAGE_KEY = "otamarun-best-score";
 const defaultTouchLayout = {
   joystick: {
     x: 0.18,
@@ -204,6 +206,7 @@ const audioState = {
 };
 
 let touchLayout = loadTouchLayout();
+let savedBestScore = loadBestScore();
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -257,6 +260,30 @@ function loadTouchLayout() {
   } catch (error) {
     return cloneTouchLayout(defaultTouchLayout);
   }
+}
+
+function loadBestScore() {
+  try {
+    const saved = window.localStorage.getItem(BEST_SCORE_STORAGE_KEY);
+    const value = Number(saved);
+    return Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+  } catch (error) {
+    return 0;
+  }
+}
+
+function saveBestScore(score) {
+  savedBestScore = Math.max(savedBestScore, Math.floor(score));
+
+  try {
+    window.localStorage.setItem(BEST_SCORE_STORAGE_KEY, String(savedBestScore));
+  } catch (error) {
+    // Ignore storage failures so the game still works in restricted environments.
+  }
+}
+
+function updateBestScoreDisplay() {
+  bestScore.textContent = `Best Score: ${savedBestScore}`;
 }
 
 function saveTouchLayout() {
@@ -961,6 +988,7 @@ function startGame() {
 
 function showMainMenuView() {
   menuPanel.classList.remove("subview-active");
+  menuPanel.classList.remove("touch-settings-mode");
   menuMainView.classList.remove("hidden");
   howToPlayPanel.classList.add("hidden");
   touchSettingsPanel.classList.add("hidden");
@@ -971,7 +999,12 @@ function endGame() {
   stopChargeHum();
   playGameOverSound();
   game.running = false;
-  finalScore.textContent = `Final Score: ${Math.floor(game.score)}`;
+  const finalValue = Math.floor(game.score);
+  finalScore.textContent = `Final Score: ${finalValue}`;
+  if (finalValue > savedBestScore) {
+    saveBestScore(finalValue);
+  }
+  updateBestScoreDisplay();
   gameOverOverlay.classList.remove("hidden");
 }
 
@@ -991,6 +1024,7 @@ function showMenu() {
 
 function showHowToPlay() {
   playMenuClickSound();
+  menuPanel.classList.remove("touch-settings-mode");
   menuPanel.classList.add("subview-active");
   menuMainView.classList.add("hidden");
   touchSettingsPanel.classList.add("hidden");
@@ -1009,6 +1043,7 @@ function showTouchSettings() {
 
   playMenuClickSound();
   menuPanel.classList.add("subview-active");
+  menuPanel.classList.add("touch-settings-mode");
   menuMainView.classList.add("hidden");
   howToPlayPanel.classList.add("hidden");
   touchSettingsPanel.classList.remove("hidden");
@@ -1342,17 +1377,18 @@ function updatePlayer(deltaTime) {
     const trailStrength = player.isCharging ? 0.8 : 1.1;
     const trailCount = player.isCharging ? 2 : 3; // Reduced back to a lighter density
     for (let i = 0; i < trailCount; i += 1) {
-      const spread = player.radius * 0.35;
+      const spread = player.radius * 0.52;
       const sideOffset = (Math.random() - 0.5) * spread;
-      const backwardOffset = player.radius * (0.9 + Math.random() * 0.5);
+      const backwardOffset = player.radius * (0.7 + Math.random() * 0.75);
+      const lateralDrift = (Math.random() - 0.5) * 26;
       game.particles.push({
         x: player.x - movementVector.x * backwardOffset - movementVector.y * sideOffset,
         y: player.y - movementVector.y * backwardOffset + movementVector.x * sideOffset,
-        vx: -movementVector.x * (15 + Math.random() * 25) + (Math.random() - 0.5) * 10,
-        vy: -movementVector.y * (15 + Math.random() * 25) + (Math.random() - 0.5) * 10,
-        life: 0.3 + Math.random() * 0.2,
-        size: (6 + Math.random() * 5) * trailStrength, // Reduced size
-        color: player.isCharging ? "rgba(180, 240, 255, 0.25)" : "rgba(173, 230, 255, 0.35)", // More transparent light blue
+        vx: -movementVector.x * (8 + Math.random() * 18) - movementVector.y * lateralDrift + (Math.random() - 0.5) * 12,
+        vy: -movementVector.y * (8 + Math.random() * 18) + movementVector.x * lateralDrift + (Math.random() - 0.5) * 12,
+        life: 0.2 + Math.random() * 0.15,
+        size: (6 + Math.random() * 5) * trailStrength,
+        color: player.isCharging ? "rgba(255, 239, 184, 0.24)" : "rgba(255, 233, 163, 0.32)",
       });
     }
   }
@@ -1668,19 +1704,6 @@ function drawPlayer() {
   ctx.fill();
 
   if (player.isCharging) {
-    const cheekLift = Math.sin(player.inhalePulse) * 0.05;
-    ctx.beginPath();
-    ctx.strokeStyle = `rgba(255, 170, 92, ${0.26 + player.chargeRatio * 0.2})`;
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.moveTo(-player.radius * 0.6, mouthY - player.radius * (0.11 + cheekLift));
-    ctx.lineTo(-player.radius * 0.4, mouthY - player.radius * (0.01 - cheekLift));
-    ctx.moveTo(player.radius * 0.4, mouthY - player.radius * (0.01 - cheekLift));
-    ctx.lineTo(player.radius * 0.6, mouthY - player.radius * (0.11 + cheekLift));
-    ctx.stroke();
-  }
-
-  if (player.isCharging) {
     ctx.beginPath();
     ctx.fillStyle = "rgba(58, 36, 22, 0.88)";
     ctx.ellipse(
@@ -1931,7 +1954,8 @@ function gameLoop(timestamp) {
 
   const rawDeltaTime = Math.min((timestamp - game.lastTime) / 1000, 0.033);
   game.lastTime = timestamp;
-  const targetTimeScale = game.player.isCharging ? 0.58 : 1;
+  const chargeSlowStrength = game.player.isCharging ? game.player.chargeRatio : 0;
+  const targetTimeScale = game.player.isCharging ? 0.46 - chargeSlowStrength * 0.14 : 1;
   const targetZoom = game.player.isCharging ? 1.045 : 1;
   const smoothRate = game.player.isCharging ? 8.5 : 6.5;
   game.timeScale += (targetTimeScale - game.timeScale) * Math.min(1, rawDeltaTime * smoothRate);
@@ -2255,4 +2279,5 @@ resizeCanvas();
 syncMobileControls();
 applyTouchLayout();
 resetGame();
+updateBestScoreDisplay();
 render();

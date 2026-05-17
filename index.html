@@ -65,7 +65,6 @@
         <div id="touchSettingsPanel" class="menu-view settings-view hidden">
           <div class="subview-header">
             <button id="closeTouchSettingsButton" class="back-button" type="button">Back</button>
-            <h2>Touch Settings</h2>
           </div>
           <p class="settings-subtitle">Drag the controls where they feel best, then tune their size.</p>
 
@@ -129,9 +128,8 @@
       <span id="dashDisplayCorner" class="hud-value">Ready</span>
       <div id="megaDisplay" class="mega-display hidden" aria-label="Mega Shout Ready">
         <div class="mega-icon">
-          <span class="mega-core"></span>
-          <span class="mega-wave wave-one"></span>
-          <span class="mega-wave wave-two"></span>
+          <span class="mega-plus plus-horizontal"></span>
+          <span class="mega-plus plus-vertical"></span>
         </div>
       </div>
     </div>
@@ -157,11 +155,32 @@
     </div>
 
     <div id="gameOverOverlay" class="overlay hidden">
-      <div class="panel">
-        <h2>Game Over</h2>
-        <p class="subtitle">Your Otamatone got bonked, but the beat can start again.</p>
-        <p id="finalScore" class="final-score">Final Score: 0</p>
-        <div class="button-row">
+      <div class="panel game-over-panel">
+        <div class="game-over-glow game-over-glow-one"></div>
+        <div class="game-over-glow game-over-glow-two"></div>
+
+        <div class="game-over-art" aria-hidden="true">
+          <div class="game-over-burst burst-one"></div>
+          <div class="game-over-burst burst-two"></div>
+          <div class="game-over-face">
+            <span class="game-over-eye left"></span>
+            <span class="game-over-eye right"></span>
+            <span class="game-over-mouth"></span>
+          </div>
+        </div>
+
+        <div class="game-over-copy">
+          <p class="game-over-kicker">Run Ended</p>
+          <h2>Game Over</h2>
+          <p class="subtitle game-over-subtitle">Your Otamatone got bonked, but the beat can start again.</p>
+        </div>
+
+        <div class="game-over-stats">
+          <p id="finalScore" class="final-score">Final Score: 0</p>
+          <p id="bestScore" class="best-score">Best Score: 0</p>
+        </div>
+
+        <div class="button-row game-over-actions">
           <button id="restartButton" class="primary-button" type="button">Restart Run</button>
           <button id="menuButton" class="secondary-button" type="button">Back to Menu</button>
         </div>
