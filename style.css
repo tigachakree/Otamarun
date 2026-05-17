@@ -1,3 +1,25 @@
+/* Minimal styles required for the menu view behavior changes */
+.hidden {
+  display: none !important;
+}
+
+.subview-header {
+  position: relative;
+  padding: 12px 0;
+}
+
+.subview-header h2 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.brand.hidden {
+  display: none !important;
+}
 :root {
   --bg-top: #fffef6;
   --bg-bottom: #fff3bf;
@@ -396,6 +418,21 @@ canvas {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(255, 248, 216, 0.88)),
     var(--panel);
+  transition: width 220ms ease, padding 220ms ease, border-radius 220ms ease, box-shadow 220ms ease;
+}
+
+.menu-panel.subview-active {
+  width: min(640px, 100%);
+  padding: 26px 28px 24px;
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 246, 214, 0.96)),
+    var(--panel);
+  box-shadow: 0 28px 70px rgba(164, 123, 26, 0.22);
+}
+
+.menu-panel.subview-active .menu-glow {
+  opacity: 0;
 }
 
 .menu-view {
@@ -590,10 +627,6 @@ h2 {
   text-align: center;
 }
 
-.how-header {
-  margin-bottom: 18px;
-}
-
 .how-panel {
   display: grid;
   gap: 10px;
@@ -609,6 +642,52 @@ h2 {
   text-align: center;
   color: var(--muted);
   font-size: 1rem;
+}
+
+.subview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.subview-header h2 {
+  font-size: clamp(1.75rem, 3.6vw, 2.7rem);
+}
+
+.back-button {
+  flex: 0 0 auto;
+  min-width: 128px;
+  padding: 13px 20px;
+  border: 1px solid rgba(255, 177, 0, 0.18);
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2f1c00;
+  background: linear-gradient(135deg, #ffe06e, #ffbf15);
+  box-shadow:
+    0 16px 28px rgba(255, 173, 33, 0.24),
+    inset 0 1px 0 rgba(255, 247, 204, 0.9);
+  transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+}
+
+.back-button::before {
+  content: "\2039";
+  margin-right: 10px;
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+.back-button:hover,
+.back-button:focus-visible {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow:
+    0 18px 32px rgba(255, 173, 33, 0.28),
+    inset 0 1px 0 rgba(255, 247, 204, 0.95);
 }
 
 .settings-preview-shell {
@@ -688,6 +767,12 @@ h2 {
 
 .settings-actions {
   margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.settings-actions .secondary-button {
+  width: min(280px, 100%);
 }
 
 .how-chip {
@@ -820,12 +905,16 @@ h2 {
     padding: 24px;
   }
 
-  .how-header {
+  .menu-panel.subview-active {
+    width: min(100%, 620px);
+    padding: 22px 22px 20px;
+  }
+
+  .subview-header {
     margin-bottom: 14px;
   }
 
-  .how-view h2,
-  .settings-view h2 {
+  .subview-header h2 {
     font-size: clamp(1.75rem, 5vw, 2.35rem);
   }
 
@@ -918,18 +1007,27 @@ h2 {
     padding: 16px 16px 14px;
   }
 
+  .menu-panel.subview-active {
+    width: 100%;
+    padding: 18px 16px 16px;
+    border-radius: 24px;
+  }
+
   .how-view,
   .settings-view {
     max-width: 100%;
   }
 
-  .how-header {
+  .subview-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
     margin-bottom: 12px;
   }
 
-  .how-view h2,
-  .settings-view h2 {
+  .subview-header h2 {
     font-size: clamp(1.55rem, 7vw, 2rem);
+    text-align: center;
   }
 
   .how-panel {
@@ -975,6 +1073,13 @@ h2 {
 
   .settings-actions {
     margin-top: 12px;
+  }
+
+  .back-button {
+    min-width: 0;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.96rem;
   }
 
   .primary-button,
@@ -1023,7 +1128,7 @@ h2 {
     padding-bottom: 14px;
   }
 
-  .how-header {
+  .subview-header {
     margin-bottom: 10px;
   }
 

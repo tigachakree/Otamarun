@@ -1,7 +1,54 @@
+document.addEventListener('DOMContentLoaded', function () {
+  const menuMainView = document.getElementById('menuMainView');
+  const howPanel = document.getElementById('howToPlayPanel');
+  const touchPanel = document.getElementById('touchSettingsPanel');
+  const brand = document.querySelector('.brand');
+  const howButton = document.getElementById('howToPlayButton');
+  const touchButton = document.getElementById('touchSettingsButton');
+  const backToMenuButton = document.getElementById('backToMenuButton');
+  const closeTouchSettingsButton = document.getElementById('closeTouchSettingsButton');
+
+  function hideAllMenuViews() {
+    document.querySelectorAll('.menu-view').forEach(v => v.classList.add('hidden'));
+  }
+
+  function openPanel(panel) {
+    hideAllMenuViews();
+    panel.classList.remove('hidden');
+    if (brand) brand.classList.add('hidden');
+    if (panel === howPanel && howButton) howButton.classList.add('hidden');
+    if (panel === touchPanel && howButton) howButton.classList.add('hidden');
+  }
+
+  function backToMenu() {
+    hideAllMenuViews();
+    if (menuMainView) menuMainView.classList.remove('hidden');
+    if (brand) brand.classList.remove('hidden');
+    if (howButton) howButton.classList.remove('hidden');
+  }
+
+  if (howButton) howButton.addEventListener('click', function () {
+    openPanel(howPanel);
+  });
+
+  if (touchButton) touchButton.addEventListener('click', function () {
+    openPanel(touchPanel);
+  });
+
+  if (backToMenuButton) backToMenuButton.addEventListener('click', function () {
+    backToMenu();
+  });
+
+  if (closeTouchSettingsButton) closeTouchSettingsButton.addEventListener('click', function () {
+    backToMenu();
+  });
+
+});
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const menuOverlay = document.getElementById("menuOverlay");
+const menuPanel = document.getElementById("menuPanel");
 const gameOverOverlay = document.getElementById("gameOverOverlay");
 const startButton = document.getElementById("startButton");
 const menuMainView = document.getElementById("menuMainView");
@@ -913,6 +960,7 @@ function startGame() {
 }
 
 function showMainMenuView() {
+  menuPanel.classList.remove("subview-active");
   menuMainView.classList.remove("hidden");
   howToPlayPanel.classList.add("hidden");
   touchSettingsPanel.classList.add("hidden");
@@ -943,6 +991,7 @@ function showMenu() {
 
 function showHowToPlay() {
   playMenuClickSound();
+  menuPanel.classList.add("subview-active");
   menuMainView.classList.add("hidden");
   touchSettingsPanel.classList.add("hidden");
   howToPlayPanel.classList.remove("hidden");
@@ -959,6 +1008,7 @@ function showTouchSettings() {
   }
 
   playMenuClickSound();
+  menuPanel.classList.add("subview-active");
   menuMainView.classList.add("hidden");
   howToPlayPanel.classList.add("hidden");
   touchSettingsPanel.classList.remove("hidden");

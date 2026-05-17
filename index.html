@@ -12,7 +12,7 @@
 <body>
   <div class="app-shell">
     <div id="menuOverlay" class="overlay">
-      <div class="panel menu-panel">
+      <div id="menuPanel" class="panel menu-panel">
         <div class="menu-glow menu-glow-one"></div>
         <div class="menu-glow menu-glow-two"></div>
 
@@ -50,7 +50,8 @@
         </div>
 
         <div id="howToPlayPanel" class="menu-view how-view hidden">
-          <div class="how-header">
+          <div class="subview-header">
+            <button id="backToMenuButton" class="back-button" type="button">Back</button>
             <h2>How to Play</h2>
           </div>
           <div class="how-panel">
@@ -59,11 +60,11 @@
             <div class="how-chip">Charge Shout: Hold Left Click</div>
             <div class="how-chip">Release Shout: Let Go</div>
           </div>
-          <button id="backToMenuButton" class="secondary-button" type="button">Back</button>
         </div>
 
         <div id="touchSettingsPanel" class="menu-view settings-view hidden">
-          <div class="how-header">
+          <div class="subview-header">
+            <button id="closeTouchSettingsButton" class="back-button" type="button">Back</button>
             <h2>Touch Settings</h2>
           </div>
           <p class="settings-subtitle">Drag the controls where they feel best, then tune their size.</p>
@@ -91,9 +92,8 @@
             <input id="dashSizeSlider" class="settings-slider" type="range" min="64" max="140" step="2" value="88">
           </div>
 
-          <div class="button-row settings-actions">
+          <div class="settings-actions">
             <button id="resetTouchSettingsButton" class="secondary-button" type="button">Reset Layout</button>
-            <button id="closeTouchSettingsButton" class="primary-button" type="button">Back</button>
           </div>
         </div>
       </div>
