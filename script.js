@@ -6,8 +6,19 @@ const gameOverOverlay = document.getElementById("gameOverOverlay");
 const startButton = document.getElementById("startButton");
 const menuMainView = document.getElementById("menuMainView");
 const howToPlayButton = document.getElementById("howToPlayButton");
+const touchSettingsButton = document.getElementById("touchSettingsButton");
 const howToPlayPanel = document.getElementById("howToPlayPanel");
 const backToMenuButton = document.getElementById("backToMenuButton");
+const touchSettingsPanel = document.getElementById("touchSettingsPanel");
+const closeTouchSettingsButton = document.getElementById("closeTouchSettingsButton");
+const resetTouchSettingsButton = document.getElementById("resetTouchSettingsButton");
+const touchSettingsPreview = document.getElementById("touchSettingsPreview");
+const previewJoystick = document.getElementById("previewJoystick");
+const previewDashButton = document.getElementById("previewDashButton");
+const joystickSizeSlider = document.getElementById("joystickSizeSlider");
+const dashSizeSlider = document.getElementById("dashSizeSlider");
+const joystickSizeValue = document.getElementById("joystickSizeValue");
+const dashSizeValue = document.getElementById("dashSizeValue");
 const restartButton = document.getElementById("restartButton");
 const menuButton = document.getElementById("menuButton");
 const mobileControls = document.getElementById("mobileControls");
@@ -22,6 +33,25 @@ const dashDisplayCorner = document.getElementById("dashDisplayCorner");
 const staminaDisplay = document.getElementById("staminaDisplay");
 const chargeDisplay = document.getElementById("chargeDisplay");
 const finalScore = document.getElementById("finalScore");
+
+const TOUCH_LAYOUT_STORAGE_KEY = "otamarun-touch-layout";
+const defaultTouchLayout = {
+  joystick: {
+    x: 0.18,
+    y: 0.82,
+    size: 122,
+  },
+  dash: {
+    x: 0.84,
+    y: 0.84,
+    size: 88,
+  },
+};
+
+const touchSettingsDrag = {
+  pointerId: null,
+  control: "",
+};
 
 // BGM State
 const bgmState = {
@@ -125,6 +155,138 @@ const audioState = {
   noiseBuffer: null,
   charge: null,
 };
+
+let touchLayout = loadTouchLayout();
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function cloneTouchLayout(layout) {
+  return {
+    joystick: { ...layout.joystick },
+    dash: { ...layout.dash },
+  };
+}
+
+function sanitizeTouchLayout(layout) {
+  const safeLayout = cloneTouchLayout(defaultTouchLayout);
+  if (!layout || typeof layout !== "object") {
+    return safeLayout;
+  }
+
+  for (const controlName of ["joystick", "dash"]) {
+    const source = layout[controlName];
+    if (!source || typeof source !== "object") {
+      continue;
+    }
+
+    const sizeRange = controlName === "joystick"
+      ? { min: 90, max: 170 }
+      : { min: 64, max: 140 };
+
+    const size = Number(source.size);
+    safeLayout[controlName].size = Number.isFinite(size)
+      ? clamp(size, sizeRange.min, sizeRange.max)
+      : safeLayout[controlName].size;
+
+    const x = Number(source.x);
+    const y = Number(source.y);
+    safeLayout[controlName].x = Number.isFinite(x) ? clamp(x, 0, 1) : safeLayout[controlName].x;
+    safeLayout[controlName].y = Number.isFinite(y) ? clamp(y, 0, 1) : safeLayout[controlName].y;
+  }
+
+  return safeLayout;
+}
+
+function loadTouchLayout() {
+  try {
+    const saved = window.localStorage.getItem(TOUCH_LAYOUT_STORAGE_KEY);
+    if (!saved) {
+      return cloneTouchLayout(defaultTouchLayout);
+    }
+
+    return sanitizeTouchLayout(JSON.parse(saved));
+  } catch (error) {
+    return cloneTouchLayout(defaultTouchLayout);
+  }
+}
+
+function saveTouchLayout() {
+  try {
+    window.localStorage.setItem(TOUCH_LAYOUT_STORAGE_KEY, JSON.stringify(touchLayout));
+  } catch (error) {
+    // Ignore storage failures so touch controls still work in restricted environments.
+  }
+}
+
+function keepTouchLayoutInBounds() {
+  const viewports = [
+    { width: window.innerWidth, height: window.innerHeight },
+    touchSettingsPreview
+      ? {
+          width: touchSettingsPreview.clientWidth,
+          height: touchSettingsPreview.clientHeight,
+        }
+      : null,
+  ].filter(Boolean);
+
+  for (const viewport of viewports) {
+    if (viewport.width <= 0 || viewport.height <= 0) {
+      continue;
+    }
+
+    for (const controlName of ["joystick", "dash"]) {
+      const control = touchLayout[controlName];
+      const halfWidth = control.size / 2;
+      const minX = halfWidth / Math.max(1, viewport.width);
+      const minY = halfWidth / Math.max(1, viewport.height);
+      control.x = clamp(control.x, minX, 1 - minX);
+      control.y = clamp(control.y, minY, 1 - minY);
+    }
+  }
+}
+
+function applyTouchLayout() {
+  keepTouchLayoutInBounds();
+
+  const targets = [mobileControls, touchSettingsPreview];
+  for (const element of targets) {
+    if (!element) {
+      continue;
+    }
+
+    element.style.setProperty("--joystick-x", `${touchLayout.joystick.x * 100}%`);
+    element.style.setProperty("--joystick-y", `${touchLayout.joystick.y * 100}%`);
+    element.style.setProperty("--joystick-size", `${touchLayout.joystick.size}px`);
+    element.style.setProperty("--dash-x", `${touchLayout.dash.x * 100}%`);
+    element.style.setProperty("--dash-y", `${touchLayout.dash.y * 100}%`);
+    element.style.setProperty("--dash-size", `${touchLayout.dash.size}px`);
+  }
+
+  joystickSizeSlider.value = String(touchLayout.joystick.size);
+  dashSizeSlider.value = String(touchLayout.dash.size);
+  joystickSizeValue.textContent = `${touchLayout.joystick.size}px`;
+  dashSizeValue.textContent = `${touchLayout.dash.size}px`;
+}
+
+function updateTouchControlPosition(controlName, clientX, clientY) {
+  const rect = touchSettingsPreview.getBoundingClientRect();
+  const control = touchLayout[controlName];
+  const halfWidth = control.size / 2;
+  const x = clamp((clientX - rect.left) / rect.width, halfWidth / rect.width, 1 - halfWidth / rect.width);
+  const y = clamp((clientY - rect.top) / rect.height, halfWidth / rect.height, 1 - halfWidth / rect.height);
+  control.x = x;
+  control.y = y;
+  applyTouchLayout();
+  saveTouchLayout();
+}
+
+function setTouchControlSize(controlName, size) {
+  touchLayout[controlName].size = size;
+  applyTouchLayout();
+  saveTouchLayout();
+}
 
 function getAudioContext() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -635,6 +797,11 @@ function syncMobileControls() {
   game.touch.enabled = isTouchDevice();
   mobileControls.classList.toggle("hidden", !game.touch.enabled);
   mobileControls.classList.toggle("is-visible", game.touch.enabled);
+  touchSettingsButton.classList.toggle("hidden", !game.touch.enabled);
+
+  if (!game.touch.enabled && !touchSettingsPanel.classList.contains("hidden")) {
+    showMainMenuView();
+  }
 }
 
 function resetJoystick() {
@@ -745,6 +912,12 @@ function startGame() {
   requestAnimationFrame(gameLoop);
 }
 
+function showMainMenuView() {
+  menuMainView.classList.remove("hidden");
+  howToPlayPanel.classList.add("hidden");
+  touchSettingsPanel.classList.add("hidden");
+}
+
 function endGame() {
   stopBGM();
   stopChargeHum();
@@ -761,8 +934,7 @@ function showMenu() {
   game.running = false;
   gameOverOverlay.classList.add("hidden");
   menuOverlay.classList.remove("hidden");
-  menuMainView.classList.remove("hidden");
-  howToPlayPanel.classList.add("hidden");
+  showMainMenuView();
   resetJoystick();
   game.touch.chargePointerId = null;
   resetGame();
@@ -772,13 +944,37 @@ function showMenu() {
 function showHowToPlay() {
   playMenuClickSound();
   menuMainView.classList.add("hidden");
+  touchSettingsPanel.classList.add("hidden");
   howToPlayPanel.classList.remove("hidden");
 }
 
 function hideHowToPlay() {
   playMenuClickSound();
+  showMainMenuView();
+}
+
+function showTouchSettings() {
+  if (!game.touch.enabled) {
+    return;
+  }
+
+  playMenuClickSound();
+  menuMainView.classList.add("hidden");
   howToPlayPanel.classList.add("hidden");
-  menuMainView.classList.remove("hidden");
+  touchSettingsPanel.classList.remove("hidden");
+  applyTouchLayout();
+}
+
+function hideTouchSettings() {
+  playMenuClickSound();
+  showMainMenuView();
+}
+
+function resetTouchSettings() {
+  playMenuClickSound();
+  touchLayout = cloneTouchLayout(defaultTouchLayout);
+  applyTouchLayout();
+  saveTouchLayout();
 }
 
 function updateHud() {
@@ -1721,6 +1917,7 @@ function gameLoop(timestamp) {
 window.addEventListener("resize", () => {
   resizeCanvas();
   syncMobileControls();
+  applyTouchLayout();
   if (!game.player) {
     return;
   }
@@ -1879,7 +2076,35 @@ joystickBase.addEventListener("pointerdown", (event) => {
   updateJoystick(event.pointerId, event.clientX, event.clientY);
 });
 
+previewJoystick.addEventListener("pointerdown", (event) => {
+  if (!game.touch.enabled) {
+    return;
+  }
+
+  event.preventDefault();
+  touchSettingsDrag.pointerId = event.pointerId;
+  touchSettingsDrag.control = "joystick";
+  updateTouchControlPosition("joystick", event.clientX, event.clientY);
+});
+
+previewDashButton.addEventListener("pointerdown", (event) => {
+  if (!game.touch.enabled) {
+    return;
+  }
+
+  event.preventDefault();
+  touchSettingsDrag.pointerId = event.pointerId;
+  touchSettingsDrag.control = "dash";
+  updateTouchControlPosition("dash", event.clientX, event.clientY);
+});
+
 window.addEventListener("pointermove", (event) => {
+  if (event.pointerId === touchSettingsDrag.pointerId && touchSettingsDrag.control) {
+    event.preventDefault();
+    updateTouchControlPosition(touchSettingsDrag.control, event.clientX, event.clientY);
+    return;
+  }
+
   if (!game.touch.enabled) {
     return;
   }
@@ -1897,6 +2122,11 @@ window.addEventListener("pointermove", (event) => {
 });
 
 window.addEventListener("pointerup", (event) => {
+  if (event.pointerId === touchSettingsDrag.pointerId) {
+    touchSettingsDrag.pointerId = null;
+    touchSettingsDrag.control = "";
+  }
+
   if (!game.touch.enabled) {
     return;
   }
@@ -1912,6 +2142,11 @@ window.addEventListener("pointerup", (event) => {
 });
 
 window.addEventListener("pointercancel", (event) => {
+  if (event.pointerId === touchSettingsDrag.pointerId) {
+    touchSettingsDrag.pointerId = null;
+    touchSettingsDrag.control = "";
+  }
+
   if (!game.touch.enabled) {
     return;
   }
@@ -1949,13 +2184,25 @@ canvas.addEventListener("pointerdown", (event) => {
   beginCharge();
 });
 
+joystickSizeSlider.addEventListener("input", () => {
+  setTouchControlSize("joystick", Number(joystickSizeSlider.value));
+});
+
+dashSizeSlider.addEventListener("input", () => {
+  setTouchControlSize("dash", Number(dashSizeSlider.value));
+});
+
 startButton.addEventListener("click", startGame);
 howToPlayButton.addEventListener("click", showHowToPlay);
+touchSettingsButton.addEventListener("click", showTouchSettings);
 backToMenuButton.addEventListener("click", hideHowToPlay);
+closeTouchSettingsButton.addEventListener("click", hideTouchSettings);
+resetTouchSettingsButton.addEventListener("click", resetTouchSettings);
 restartButton.addEventListener("click", startGame);
 menuButton.addEventListener("click", showMenu);
 
 resizeCanvas();
 syncMobileControls();
+applyTouchLayout();
 resetGame();
 render();

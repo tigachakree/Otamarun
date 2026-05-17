@@ -52,6 +52,12 @@ canvas {
   inset: 0;
   z-index: 6;
   pointer-events: none;
+  --joystick-x: 18%;
+  --joystick-y: 82%;
+  --joystick-size: 122px;
+  --dash-x: 84%;
+  --dash-y: 84%;
+  --dash-size: 88px;
 }
 
 .mobile-controls.is-visible {
@@ -65,11 +71,12 @@ canvas {
 
 .joystick-base {
   position: absolute;
-  left: 18px;
-  bottom: 24px;
-  width: 122px;
-  height: 122px;
+  left: var(--joystick-x);
+  top: var(--joystick-y);
+  width: var(--joystick-size);
+  height: var(--joystick-size);
   border-radius: 50%;
+  transform: translate(-50%, -50%);
   border: 1px solid rgba(255, 255, 255, 0.62);
   background:
     radial-gradient(circle at center, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08)),
@@ -85,8 +92,8 @@ canvas {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 54px;
-  height: 54px;
+  width: calc(var(--joystick-size) * 0.44);
+  height: calc(var(--joystick-size) * 0.44);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   background: radial-gradient(circle at 35% 30%, #fffef9, #f3df98 78%, #e0bd52 100%);
@@ -98,12 +105,13 @@ canvas {
 
 .dash-button-mobile {
   position: absolute;
-  right: 18px;
-  bottom: 30px;
-  width: 88px;
-  height: 88px;
+  left: var(--dash-x);
+  top: var(--dash-y);
+  width: var(--dash-size);
+  height: var(--dash-size);
   border: none;
   border-radius: 50%;
+  transform: translate(-50%, -50%);
   color: #3c2600;
   font: inherit;
   font-size: 1rem;
@@ -117,7 +125,7 @@ canvas {
 }
 
 .dash-button-mobile:active {
-  transform: scale(0.96);
+  transform: translate(-50%, -50%) scale(0.96);
 }
 
 .hud {
@@ -592,6 +600,96 @@ h2 {
   margin-bottom: 20px;
 }
 
+.settings-view {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.settings-subtitle {
+  text-align: center;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.settings-preview-shell {
+  margin: 20px 0 18px;
+  padding: 12px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(241, 191, 58, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.touch-settings-preview {
+  position: relative;
+  width: 100%;
+  min-height: 260px;
+  overflow: hidden;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top, rgba(255, 219, 112, 0.34), transparent 36%),
+    linear-gradient(180deg, rgba(255, 251, 237, 0.98), rgba(255, 242, 191, 0.92));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  touch-action: none;
+  --joystick-x: 18%;
+  --joystick-y: 72%;
+  --joystick-size: 122px;
+  --dash-x: 82%;
+  --dash-y: 72%;
+  --dash-size: 88px;
+}
+
+.touch-settings-preview::before {
+  content: "Drag to reposition";
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.preview-control {
+  cursor: grab;
+}
+
+.preview-control:active {
+  cursor: grabbing;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-field {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.settings-value {
+  color: var(--muted);
+}
+
+.settings-slider {
+  width: 100%;
+  accent-color: var(--accent-strong);
+}
+
+.settings-actions {
+  margin-top: 20px;
+}
+
 .how-chip {
   padding: 12px 14px;
   border-radius: 18px;
@@ -793,24 +891,5 @@ h2 {
 
   .button-row {
     grid-template-columns: 1fr;
-  }
-
-  .joystick-base {
-    left: 14px;
-    bottom: 18px;
-    width: 112px;
-    height: 112px;
-  }
-
-  .joystick-knob {
-    width: 50px;
-    height: 50px;
-  }
-
-  .dash-button-mobile {
-    right: 14px;
-    bottom: 22px;
-    width: 82px;
-    height: 82px;
   }
 }

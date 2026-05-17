@@ -44,6 +44,7 @@
             <div class="menu-actions">
               <button id="startButton" class="primary-button" type="button">Start</button>
               <button id="howToPlayButton" class="secondary-button" type="button">How to Play</button>
+              <button id="touchSettingsButton" class="secondary-button hidden" type="button">Settings</button>
             </div>
           </div>
         </div>
@@ -59,6 +60,41 @@
             <div class="how-chip">Release Shout: Let Go</div>
           </div>
           <button id="backToMenuButton" class="secondary-button" type="button">Back</button>
+        </div>
+
+        <div id="touchSettingsPanel" class="menu-view settings-view hidden">
+          <div class="how-header">
+            <h2>Touch Settings</h2>
+          </div>
+          <p class="settings-subtitle">Drag the controls where they feel best, then tune their size.</p>
+
+          <div class="settings-preview-shell">
+            <div id="touchSettingsPreview" class="touch-settings-preview" aria-label="Touch controls preview">
+              <div id="previewJoystick" class="joystick-base preview-control" aria-label="Move joystick preview">
+                <div class="joystick-knob"></div>
+              </div>
+              <button id="previewDashButton" class="dash-button-mobile preview-control" type="button" aria-label="Dash button preview">Dash</button>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <label class="settings-field" for="joystickSizeSlider">
+              <span>Joystick Size</span>
+              <span id="joystickSizeValue" class="settings-value">122px</span>
+            </label>
+            <input id="joystickSizeSlider" class="settings-slider" type="range" min="90" max="170" step="2" value="122">
+
+            <label class="settings-field" for="dashSizeSlider">
+              <span>Dash Button Size</span>
+              <span id="dashSizeValue" class="settings-value">88px</span>
+            </label>
+            <input id="dashSizeSlider" class="settings-slider" type="range" min="64" max="140" step="2" value="88">
+          </div>
+
+          <div class="button-row settings-actions">
+            <button id="resetTouchSettingsButton" class="secondary-button" type="button">Reset Layout</button>
+            <button id="closeTouchSettingsButton" class="primary-button" type="button">Back</button>
+          </div>
         </div>
       </div>
     </div>
