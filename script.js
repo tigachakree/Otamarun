@@ -239,19 +239,10 @@ function keepTouchLayoutInBounds() {
     for (const controlName of ["joystick", "dash"]) {
       const control = touchLayout[controlName];
       const halfWidth = control.size / 2;
-      if (viewport.width <= control.size) {
-        control.x = 0.5;
-      } else {
-        const minX = halfWidth / Math.max(1, viewport.width);
-        control.x = clamp(control.x, minX, 1 - minX);
-      }
-
-      if (viewport.height <= control.size) {
-        control.y = 0.5;
-      } else {
-        const minY = halfWidth / Math.max(1, viewport.height);
-        control.y = clamp(control.y, minY, 1 - minY);
-      }
+      const minX = halfWidth / Math.max(1, viewport.width);
+      const minY = halfWidth / Math.max(1, viewport.height);
+      control.x = clamp(control.x, minX, 1 - minX);
+      control.y = clamp(control.y, minY, 1 - minY);
     }
   }
 }
@@ -283,14 +274,8 @@ function updateTouchControlPosition(controlName, clientX, clientY) {
   const rect = touchSettingsPreview.getBoundingClientRect();
   const control = touchLayout[controlName];
   const halfWidth = control.size / 2;
-  const x =
-    rect.width <= control.size
-      ? 0.5
-      : clamp((clientX - rect.left) / rect.width, halfWidth / rect.width, 1 - halfWidth / rect.width);
-  const y =
-    rect.height <= control.size
-      ? 0.5
-      : clamp((clientY - rect.top) / rect.height, halfWidth / rect.height, 1 - halfWidth / rect.height);
+  const x = clamp((clientX - rect.left) / rect.width, halfWidth / rect.width, 1 - halfWidth / rect.width);
+  const y = clamp((clientY - rect.top) / rect.height, halfWidth / rect.height, 1 - halfWidth / rect.height);
   control.x = x;
   control.y = y;
   applyTouchLayout();
